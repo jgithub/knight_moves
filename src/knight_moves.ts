@@ -3,21 +3,16 @@
  * Sometimes a knight is adjacent to it's destination, but has to move further
  * away before it can hit the target.
  *
- * - Goals
- * - Simple Brute force
- * - Aim for Correctness with some performance-related implementation debt
- * - Common Sense (to me anyways) filtering-out of "bad moves"
- * - Most everything is immutable\
- * - OO
- * - Program to an interface
- *
  * TODOs:
  * - Create correctness test suites/gold results
  * - Benchmarking
- * - lint fixing
  * - break this into multiple files
  * - unit testing
  * - I'm not yet confident in the filtering correctness or performance.  More testing is needed here.
+ * - More concise naming in a few places
+ * - Infinite board will take a lot of CPU.  But target the implementation to be memory efficient.  RAM usage CANNOT scale with board size
+ *     - I've already taken some steps towards this, but I haven't done any profile testing or really large board tests yet
+ * - There are also a bunch of TODOs littered around in the code.
  */
 
 /*
@@ -149,7 +144,6 @@ export class ChessBoardSquare {
     return c
   }
 
-
   /**
    * Is this square in the same location as another?
    */
@@ -203,15 +197,15 @@ export class KnightInTransit {
     return new KnightInTransit(board, startingSquare, destinationSquare)
   }
 
-  public distanceFromDestination (): number {
+  public calculateDistanceFromDestination (): number {
     return this.m_destinationSquare.distanceBetween(this.m_currentSquare)
   }
 
-  public deltaXFromDestination (): number {
+  public calculateDeltaXFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getX() - this.m_currentSquare.getX())
   }
 
-  public deltaYFromDestination (): number {
+  public calculateDeltaYFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getY() - this.m_currentSquare.getY())
   }
 
@@ -323,12 +317,21 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
+  /**
+   * I think it's true that when a Knight is still far away from it's destination, it should always be jumping closer to it's desgination
+   *
+   * This is not true when a Knight is closer to it's destination.  Sometimes a knight is adjacent to it's destination, but has to move further
+   * away before it can reach the target.
+   *
+   * TODO:  Confirm this
+   */
+
   public isThisSquareSignificantlyWorseThanThePrevious (knightInTransit: KnightInTransit): boolean {
-    const deltaFromPreviousLocation = knightInTransit.distanceFromDestination() - this.m_history[0].distanceFromDestination()
+    const deltaFromPreviousLocation = knightInTransit.calculateDistanceFromDestination() - this.m_history[0].calculateDistanceFromDestination()
     debug(`isThisSquareSignificantlyWorseThanThePrevious(): deltaFromPreviousLocation = ${deltaFromPreviousLocation}`)
 
     /** If we are pretty far away, and we are getting further away still... */
-    if ((knightInTransit.distanceFromDestination() > KNIGHT_JUMP_DISTANCE) && deltaFromPreviousLocation > 0) {
+    if ((knightInTransit.calculateDistanceFromDestination() > KNIGHT_JUMP_DISTANCE) && deltaFromPreviousLocation > 0) {
       debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning TRUE')
       return true
     }
@@ -337,14 +340,24 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
+  /**
+   * I think it's true that when a Knight is still far away from it's destination, it should move to make both it's
+   * X, Y coordinates closer to the destination.
+   *
+   * This is not true when a Knight is closer to it's destination.  Sometimes a knight is adjacent to it's destination, but has to move further
+   * away before it can reach the target.
+   *
+   * TODO:  Confirm this
+   */
+
   public isDistantAndNotGettingCloserInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
-    const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
-    const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
+    const deltaFromLastLocationX = knightInTransit.calculateDeltaXFromDestination() - this.m_history[0].calculateDeltaXFromDestination()
+    const deltaFromLastLocationY = knightInTransit.calculateDeltaYFromDestination() - this.m_history[0].calculateDeltaYFromDestination()
 
     debug(`isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): deltaFromLastLocationX = ${deltaFromLastLocationX},  deltaFromLastLocationY = ${deltaFromLastLocationY}`)
 
     /** If we are pretty far away, and we are getting further away still... */
-    if ((knightInTransit.distanceFromDestination() > KNIGHT_JUMP_DISTANCE) && (deltaFromLastLocationX > 0 || deltaFromLastLocationY > 0)) {
+    if ((knightInTransit.calculateDistanceFromDestination() > KNIGHT_JUMP_DISTANCE) && (deltaFromLastLocationX > 0 || deltaFromLastLocationY > 0)) {
       debug('isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): Returning TRUE')
       return true
     }
@@ -353,9 +366,16 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
+  /**
+   * I think it's true that in order to calculate the most efficient movement path, every Knight move
+   * should be making at least one of the X,Y coordinates no-worse in relation to the destination
+   *
+   * TODO:  Confirm this
+   */
+
   public isThisSquareWorseInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
-    const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
-    const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
+    const deltaFromLastLocationX = knightInTransit.calculateDeltaXFromDestination() - this.m_history[0].calculateDeltaXFromDestination()
+    const deltaFromLastLocationY = knightInTransit.calculateDeltaYFromDestination() - this.m_history[0].calculateDeltaYFromDestination()
 
     debug(`isThisSquareWorseInBothDirectionsSimultaneously(): deltaFromLastLocationX = ${deltaFromLastLocationX},  deltaFromLastLocationY = ${deltaFromLastLocationY}`)
 
@@ -398,27 +418,28 @@ export class KnightInTransitMovementHistory {
   }
 
   /**
- * Returns undefined if there are no next moves
- */
+   * Recursively find the best path that works from this subtree
+   * Returns undefined if there are no next moves that can be made with this subtree
+   */
 
-  public determineBestHistoryThatWorks (numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
+  public determineMostEfficientMovePath (numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
     if (numRecursions > 20) {
-      warn(`determineBestHistoryThatWorks(): Entering with this.getSize() = ${this.getSize()},  this = ${this.toString()},  numRecursions = ${numRecursions}`)
+      warn(`determineMostEfficientMovePath(): Entering with this.getSize() = ${this.getSize()},  this = ${this.toString()},  numRecursions = ${numRecursions}`)
     }
-    debug(`determineBestHistoryThatWorks(): Entering with this.getSize() = ${this.getSize()},  numRecursions = ${numRecursions}`)
+    debug(`determineMostEfficientMovePath(): Entering with this.getSize() = ${this.getSize()},  numRecursions = ${numRecursions}`)
 
     if (maxNumRecursions != null && numRecursions > maxNumRecursions) {
-      debug('determineBestHistoryThatWorks(): Too many recursions')
+      debug('determineMostEfficientMovePath(): Too many recursions')
       return undefined
     }
 
     const mostRecentKnightMovement: KnightInTransit = this.getMostRecentKnightInTransit()
     if (mostRecentKnightMovement.amIAtMyDestination()) {
-      debug('determineBestHistoryThatWorks(): I am there yet')
+      debug('determineMostEfficientMovePath(): I am there yet')
       return this
     }
 
-    const divergingHistoriesThatWork: Array<KnightInTransitMovementHistory | undefined> = []
+    const knightInTransitMovementHistorySubtrees: Array<KnightInTransitMovementHistory | undefined> = []
 
     /**
      * Consider all the directions a knight might move.  There are 8
@@ -428,7 +449,7 @@ export class KnightInTransitMovementHistory {
        * Should we even consider going in this direction?
        */
 
-      debug(`determineBestHistoryThatWorks(): Should we even consider direction = ${ii} of ${iterateAllDirections.length}: ${iterateAllDirections[ii]}`)
+      debug(`determineMostEfficientMovePath(): Should we even consider direction = ${ii} of ${iterateAllDirections.length}: ${iterateAllDirections[ii]}`)
 
       const considerThisAsNextDirection: KnightMoveDirection = iterateAllDirections[ii]
       const considerThisKnightMove: KnightInTransit = mostRecentKnightMovement.cloneAndMoveInDirection(considerThisAsNextDirection)
@@ -453,43 +474,45 @@ export class KnightInTransitMovementHistory {
        * TODO:  There is some risk and debt here.  These filters are based on my gut.   There
        * are possibly a number of bugs and/or performance weaknesses.
        *
+       * TODO:  Correctness and performance testing
        * TODO:  More testing with test sets that I know are accurate
-       * TODO:  Profiling/performance improvements
+       * TODO:  Profiling/performance improvements; optimzations
        * TODO:  For instance Consider a board where we are moving from square (1,1) to square (1000,1000).
        *        The fastest approach might to just prefix the history with a bunch of alternating
        *        North-north-east and ENE movements until we "get close"
+       * TODO:  Consider more-elegant implementations here
        */
 
       if (this.haveIBeenHereBefore(considerThisKnightMove)) {
-        info('determineBestHistoryThatWorks(): I have been here before.  Going in circles')
+        info('determineMostEfficientMovePath(): I have been here before.  Going in circles')
         continue
       }
       if (!considerThisKnightMove.isCurrentSquareEvenOnTheBoard()) {
-        info('determineBestHistoryThatWorks(): I am not even on the board anymore')
+        info('determineMostEfficientMovePath(): I am not even on the board anymore')
         continue
       }
-      if (this.isThisSquareSignificantlyWorseThanThePrevious(considerThisKnightMove)) {
-        info('determineBestHistoryThatWorks(): Significantly worse positioning')
-        continue
-      }
+      // if (this.isThisSquareSignificantlyWorseThanThePrevious(considerThisKnightMove)) {
+      //   info('determineMostEfficientMovePath(): Significantly worse positioning')
+      //   continue
+      // }
       if (this.isThisSquareWorseInBothDirectionsSimultaneously(considerThisKnightMove)) {
-        info('determineBestHistoryThatWorks(): Worse in both directions simultaneously')
+        info('determineMostEfficientMovePath(): Worse in both directions simultaneously')
         continue
       }
       if (this.isDistantAndNotGettingCloserInBothDirectionsSimultaneously(considerThisKnightMove)) {
-        info('determineBestHistoryThatWorks(): Distant and not getting closer in both directions')
+        info('determineMostEfficientMovePath(): Distant and not getting closer in both directions')
         continue
       }
 
       // if (considerThisKnightMove.amIAdjacentFromDestination()) {
-      //   info(`determineBestHistoryThatWorks(): I am ADJACENT to my destination`)
+      //   info(`determineMostEfficientMovePath(): I am ADJACENT to my destination`)
       // }
 
       // if (considerThisKnightMove.amIWithinOneJumpAsTheCrowFlies()) {
-      //   info(`determineBestHistoryThatWorks(): I am within one jump as the crow flies`)
+      //   info(`determineMostEfficientMovePath(): I am within one jump as the crow flies`)
       // }
 
-      info('determineBestHistoryThatWorks(): Still potentially viable after filtering')
+      info('determineMostEfficientMovePath(): Still potentially viable after filtering')
 
       // The quick filters haven't short-circuited this approach yet,
       // so trigger recursion
@@ -497,33 +520,33 @@ export class KnightInTransitMovementHistory {
       const anotherPotentialHistoryToConsider: KnightInTransitMovementHistory = this.cloneAndAffixSquare(considerThisKnightMove)
 
       // TODO: More concise name
-      const bestKnightInTransitMovementHistoryFromThisSubtree: KnightInTransitMovementHistory | undefined = anotherPotentialHistoryToConsider.determineBestHistoryThatWorks(numRecursions + 1, undefined)
+      const bestKnightInTransitMovementHistoryFromThisSubtree: KnightInTransitMovementHistory | undefined = anotherPotentialHistoryToConsider.determineMostEfficientMovePath(numRecursions + 1, undefined)
       if (bestKnightInTransitMovementHistoryFromThisSubtree != null) {
-        debug('determineBestHistoryThatWorks(): Found a diverging history that works')
-        divergingHistoriesThatWork.unshift(bestKnightInTransitMovementHistoryFromThisSubtree)
+        debug('determineMostEfficientMovePath(): Found a diverging history that works')
+        knightInTransitMovementHistorySubtrees.unshift(bestKnightInTransitMovementHistoryFromThisSubtree)
       }
     }
 
-    debug(`determineBestHistoryThatWorks(): divergingHistoriesThatWork.length = ${divergingHistoriesThatWork.length}`)
+    debug(`determineMostEfficientMovePath(): knightInTransitMovementHistorySubtrees.length = ${knightInTransitMovementHistorySubtrees.length}`)
 
     let bestHistorySoFar: KnightInTransitMovementHistory | undefined
 
     /**
-     * Iterate through divergingHistoriesThatWork and see if there are any better ones
+     * Iterate through knightInTransitMovementHistorySubtrees and see if there are any better ones
      */
-    for (let ii: number = 0; ii < divergingHistoriesThatWork.length; ii++) {
-      const currentHistoryUnderTest = (divergingHistoriesThatWork)[ii]
+    for (let ii: number = 0; ii < knightInTransitMovementHistorySubtrees.length; ii++) {
+      const currentHistoryUnderTest = (knightInTransitMovementHistorySubtrees)[ii]
       if (bestHistorySoFar == null) {
         bestHistorySoFar = currentHistoryUnderTest
       } else {
         if (currentHistoryUnderTest.getNumMovesAlready() < bestHistorySoFar.getNumMovesAlready()) {
           bestHistorySoFar = currentHistoryUnderTest
-          debug(`determineBestHistoryThatWorks(): Found new bestHistorySoFar = ${JSON.stringify(bestHistorySoFar)}`)
+          debug(`determineMostEfficientMovePath(): Found new bestHistorySoFar = ${JSON.stringify(bestHistorySoFar)}`)
         }
       }
     }
 
-    debug(`determineBestHistoryThatWorks(): Returning ${JSON.stringify(bestHistorySoFar)}`)
+    debug(`determineMostEfficientMovePath(): Returning ${JSON.stringify(bestHistorySoFar)}`)
     return bestHistorySoFar
   }
 }
@@ -532,7 +555,7 @@ export class KnightMoveRunner {
   public run (chessBoard: ChessBoard, knightStartingSquare: ChessBoardSquare, knightDestinationSquare: ChessBoardSquare): KnightInTransitMovementHistory | undefined {
     const knightInTransit: KnightInTransit = KnightInTransit.createKnightWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
     const initialHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
-    const knightInTransitMovementHistory = initialHistory.determineBestHistoryThatWorks(0, undefined)
+    const knightInTransitMovementHistory = initialHistory.determineMostEfficientMovePath(0, undefined)
     return knightInTransitMovementHistory
   }
 }
