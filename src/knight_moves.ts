@@ -50,7 +50,7 @@ const KNIGHT_JUMP_DISTANCE = Math.sqrt(5)
 */
 
 // TODO: replace with log4js
-function trace(msg: any, ...args: any[]): void {
+function trace (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
   // } else {
@@ -58,7 +58,7 @@ function trace(msg: any, ...args: any[]): void {
   // }
 }
 
-export function debug(msg: any, ...args: any[]): void {
+export function debug (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
   // } else {
@@ -66,7 +66,7 @@ export function debug(msg: any, ...args: any[]): void {
   // }
 }
 
-function info(msg: any, ...args: any[]): void {
+function info (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.info(msg, args)
   // } else {
@@ -74,7 +74,7 @@ function info(msg: any, ...args: any[]): void {
   // }
 }
 
-function warn(msg: any, ...args: any[]): void {
+function warn (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.warn(msg, args)
   // } else {
@@ -119,7 +119,7 @@ export class ChessBoardSquare {
   private readonly m_x: number
   private readonly m_y: number
 
-  constructor(x: number, y: number) {
+  constructor (x: number, y: number) {
     this.m_x = x
     this.m_y = y
   }
@@ -127,21 +127,21 @@ export class ChessBoardSquare {
   /**
    * Return the square's X-position
    */
-  public getX(): number {
+  public getX (): number {
     return this.m_x
   }
 
   /**
    * Return the square's Y-position
    */
-  public getY(): number {
+  public getY (): number {
     return this.m_y
   }
 
   /**
    * Calculate the distance to another position
    */
-  public distanceBetween(anotherSquare: ChessBoardSquare): number {
+  public distanceBetween (anotherSquare: ChessBoardSquare): number {
     const xDiff = anotherSquare.getX() - this.m_x
     const yDiff = anotherSquare.getY() - this.m_y
     const c: number = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2))
@@ -149,7 +149,7 @@ export class ChessBoardSquare {
     return c
   }
 
-  public isSameAs(anotherSquare: ChessBoardSquare): boolean {
+  public isSameAs (anotherSquare: ChessBoardSquare): boolean {
     const retval = this.distanceBetween(anotherSquare) === 0
     debug(`isSameAs(): Returning ${retval}`)
     return retval
@@ -164,19 +164,19 @@ export class ChessBoard {
   private readonly m_numCols: number
   private readonly m_numRows: number
 
-  constructor(numCols: number, numRows: number) {
+  constructor (numCols: number, numRows: number) {
     this.m_numCols = numCols
     this.m_numRows = numRows
     debug(`constructor(): Creating chess board ${numCols}x${numRows}...`)
   }
 
   // corresponds to X
-  public getNumCols(): number {
+  public getNumCols (): number {
     return this.m_numCols
   }
 
   // corresponds to Y
-  public getNumRows(): number {
+  public getNumRows (): number {
     return this.m_numRows
   }
 }
@@ -188,26 +188,26 @@ export class KnightInTransit {
   // Reference back to the chess board this knight is moving within
   private readonly m_chessBoardRef: ChessBoard
 
-  private constructor(chessBoard: ChessBoard, currentSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare) {
+  private constructor (chessBoard: ChessBoard, currentSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare) {
     this.m_currentSquare = currentSquare
     this.m_destinationSquare = destinationSquare
     this.m_chessBoardRef = chessBoard
   }
 
   // TODO: More concise
-  public static createKnightWithStartingSquareAndDestinationInMind(board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
+  public static createKnightWithStartingSquareAndDestinationInMind (board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
     return new KnightInTransit(board, startingSquare, destinationSquare)
   }
 
-  public distanceFromDestination(): number {
+  public distanceFromDestination (): number {
     return this.m_destinationSquare.distanceBetween(this.m_currentSquare)
   }
 
-  public deltaXFromDestination(): number {
+  public deltaXFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getX() - this.m_currentSquare.getX())
   }
 
-  public deltaYFromDestination(): number {
+  public deltaYFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getY() - this.m_currentSquare.getY())
   }
 
@@ -219,7 +219,7 @@ export class KnightInTransit {
   //   return this.m_destinationSquare.distanceBetween(this.m_currentSquare) < Math.sqrt(2)
   // }
 
-  public isCurrentSquareEvenOnTheBoard(): boolean {
+  public isCurrentSquareEvenOnTheBoard (): boolean {
     if (this.m_currentSquare.getX() > this.m_chessBoardRef.getNumCols()) {
       debug(`isCurrentSquareEvenOnTheBoard(): Returning FALSE  this.m_currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
       return false
@@ -246,7 +246,7 @@ export class KnightInTransit {
   /**
    * Determine if the Knight has reached it's destination
    */
-  public amIAtMyDestination(): boolean {
+  public amIAtMyDestination (): boolean {
     const retval = this.m_currentSquare.isSameAs(this.m_destinationSquare)
     debug(`amIAtMyDestination(): Returning ${retval}`)
     return retval
@@ -256,7 +256,7 @@ export class KnightInTransit {
    * Instantiate and return a cloned KnightInTransit, having been moved in the specified direction
    */
 
-  public cloneAndMoveInDirection(direction: KnightMoveDirection): KnightInTransit {
+  public cloneAndMoveInDirection (direction: KnightMoveDirection): KnightInTransit {
     const newSquare: ChessBoardSquare = (() => {
       debug(`cloneAndMoveInDirection(): Jumping '${direction}' from currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
       switch (direction) {
@@ -283,7 +283,7 @@ export class KnightInTransit {
     return new KnightInTransit(this.m_chessBoardRef, newSquare, this.m_destinationSquare)
   }
 
-  public getCurrentSquare(): ChessBoardSquare {
+  public getCurrentSquare (): ChessBoardSquare {
     return this.m_currentSquare
   }
 }
@@ -291,7 +291,7 @@ export class KnightInTransit {
 export class KnightInTransitMovementHistory {
   private readonly m_history: KnightInTransit[]
 
-  constructor(existingHistory: KnightInTransit[] | undefined) {
+  constructor (existingHistory: KnightInTransit[] | undefined) {
     if (existingHistory != null) {
       this.m_history = existingHistory.slice()
     } else {
@@ -299,15 +299,15 @@ export class KnightInTransitMovementHistory {
     }
   }
 
-  public getSize(): number {
+  public getSize (): number {
     return this.m_history.length
   }
 
-  public getHistory(): KnightInTransit[] {
+  public getHistory (): KnightInTransit[] {
     return this.m_history
   }
 
-  public haveIBeenHereBefore(knightInTransit: KnightInTransit): boolean {
+  public haveIBeenHereBefore (knightInTransit: KnightInTransit): boolean {
     for (let ii = 0; ii < this.m_history.length; ii++) {
       const knightPostionUnderTest: ChessBoardSquare = this.m_history[ii].getCurrentSquare()
       if (knightPostionUnderTest.isSameAs(knightInTransit.getCurrentSquare())) {
@@ -318,7 +318,7 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
-  public isThisSquareSignificantlyWorseThanThePrevious(knightInTransit: KnightInTransit): boolean {
+  public isThisSquareSignificantlyWorseThanThePrevious (knightInTransit: KnightInTransit): boolean {
     const deltaFromPreviousLocation = knightInTransit.distanceFromDestination() - this.m_history[0].distanceFromDestination()
     debug(`isThisSquareSignificantlyWorseThanThePrevious(): deltaFromPreviousLocation = ${deltaFromPreviousLocation}`)
 
@@ -332,7 +332,7 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
-  public isDistantAndNotGettingCloserInBothDirectionsSimultaneously(knightInTransit: KnightInTransit): boolean {
+  public isDistantAndNotGettingCloserInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
     const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
     const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
 
@@ -348,7 +348,7 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
-  public isThisSquareWorseInBothDirectionsSimultaneously(knightInTransit: KnightInTransit): boolean {
+  public isThisSquareWorseInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
     const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
     const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
 
@@ -364,31 +364,31 @@ export class KnightInTransitMovementHistory {
     return false
   }
 
-  public cloneAndAffixSquare(knightInTransit: KnightInTransit): KnightInTransitMovementHistory {
+  public cloneAndAffixSquare (knightInTransit: KnightInTransit): KnightInTransitMovementHistory {
     const clone = new KnightInTransitMovementHistory(this.m_history)
     clone.m_history.unshift(knightInTransit)
     return clone
   }
 
-  public getNumMovesAlready(): number {
+  public getNumMovesAlready (): number {
     // The starting position is in the array.  So there is one less
     return this.m_history.length - 1
   }
 
-  public getNumDifferentSquares(): number {
+  public getNumDifferentSquares (): number {
     // The starting position is in the array.  So there is one less move than there are positions
     return this.m_history.length
   }
 
-  public toString(): string {
+  public toString (): string {
     return this.getHistory().slice().reverse().map((item) => `(${item.getCurrentSquare().getX()}, ${item.getCurrentSquare().getY()})`).join(' -> ')
   }
 
-  public getMostRecentKnightInTransit(): KnightInTransit {
+  public getMostRecentKnightInTransit (): KnightInTransit {
     return this.m_history[0]
   }
 
-  public clone(): KnightInTransitMovementHistory {
+  public clone (): KnightInTransitMovementHistory {
     return new KnightInTransitMovementHistory(this.m_history.slice())
   }
 
@@ -396,7 +396,7 @@ export class KnightInTransitMovementHistory {
  * Returns undefined if there are no next moves
  */
 
-  public determineBestHistoryThatWorks(numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
+  public determineBestHistoryThatWorks (numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
     if (numRecursions > 20) {
       warn(`determineBestHistoryThatWorks(): Entering with this.getSize() = ${this.getSize()},  this = ${this.toString()},  numRecursions = ${numRecursions}`)
     }
@@ -444,15 +444,15 @@ export class KnightInTransitMovementHistory {
 
       /**
        * Filter out/Disregard as many bogus moves as possible, as fast as possible
-       * 
+       *
        * TODO:  There is some risk and debt here.  These filters are based on my gut.   There
-       * are possibly a number of bugs and/or performance weaknesses.  
-       * 
+       * are possibly a number of bugs and/or performance weaknesses.
+       *
        * TODO:  More testing with test sets that I know are accurate
        * TODO:  Profiling/performance improvements
-       * TODO:  For instance Consider a board where we are moving from square (1,1) to square (1000,1000).  
+       * TODO:  For instance Consider a board where we are moving from square (1,1) to square (1000,1000).
        *        The fastest approach might to just prefix the history with a bunch of alternating
-       *        North-north-east and ENE movements until we "get close" 
+       *        North-north-east and ENE movements until we "get close"
        */
 
       if (this.haveIBeenHereBefore(considerThisKnightMove)) {
@@ -490,7 +490,7 @@ export class KnightInTransitMovementHistory {
       // so trigger recursion
 
       const anotherPotentialHistoryToConsider: KnightInTransitMovementHistory = this.cloneAndAffixSquare(considerThisKnightMove)
-      
+
       // TODO: More concise name
       const bestKnightInTransitMovementHistoryFromThisSubtree: KnightInTransitMovementHistory | undefined = anotherPotentialHistoryToConsider.determineBestHistoryThatWorks(numRecursions + 1, undefined)
       if (bestKnightInTransitMovementHistoryFromThisSubtree != null) {
@@ -523,13 +523,11 @@ export class KnightInTransitMovementHistory {
   }
 }
 
-
-
 export class KnightMoveRunner {
-  public run(chessBoard: ChessBoard, knightStartingSquare: ChessBoardSquare, knightDestinationSquare: ChessBoardSquare): KnightInTransitMovementHistory | undefined {
+  public run (chessBoard: ChessBoard, knightStartingSquare: ChessBoardSquare, knightDestinationSquare: ChessBoardSquare): KnightInTransitMovementHistory | undefined {
     const knightInTransit: KnightInTransit = KnightInTransit.createKnightWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
     const initialHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
     const knightInTransitMovementHistory = initialHistory.determineBestHistoryThatWorks(0, undefined)
     return knightInTransitMovementHistory
   }
-} 
+}
