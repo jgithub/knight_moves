@@ -326,19 +326,22 @@ export class KnightInTransitMovementHistory {
    * TODO:  Confirm this
    */
 
-  public isThisSquareSignificantlyWorseThanThePrevious (knightInTransit: KnightInTransit): boolean {
-    const deltaFromPreviousLocation = knightInTransit.calculateDistanceFromDestination() - this.m_history[0].calculateDistanceFromDestination()
-    debug(`isThisSquareSignificantlyWorseThanThePrevious(): deltaFromPreviousLocation = ${deltaFromPreviousLocation}`)
+  // public isThisSquareSignificantlyWorseThanThePrevious (knightInTransit: KnightInTransit): boolean {
+  //   const deltaFromPreviousLocation = knightInTransit.calculateDistanceFromDestination() - this.m_history[0].calculateDistanceFromDestination()
+  //   debug(`isThisSquareSignificantlyWorseThanThePrevious(): deltaFromPreviousLocation = ${deltaFromPreviousLocation}`)
 
-    /** If we are pretty far away, and we are getting further away still... */
-    if ((knightInTransit.calculateDistanceFromDestination() > KNIGHT_JUMP_DISTANCE) && deltaFromPreviousLocation > 0) {
-      debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning TRUE')
-      return true
-    }
+  //   /** If we are pretty far away, and we are getting further away still... */
+  //   if ((knightInTransit.calculateDistanceFromDestination() > KNIGHT_JUMP_DISTANCE) && deltaFromPreviousLocation > 0) {
+  //     debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning TRUE')
+  //     return true
+  //   }
 
-    debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning FALSE')
-    return false
-  }
+  //   debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning FALSE')
+  //   return false
+  // }
+
+  // TODO: I'm still looking at these filters.  Which are legit.  Which can be made faster, etc etc..
+  // I'm keeping the above method here for now, but I'll either use it or pull it out of the subsequent PR
 
   /**
    * I think it's true that when a Knight is still far away from it's destination, it should move to make both it's
