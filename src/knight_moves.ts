@@ -1,11 +1,11 @@
 // jeano@MacBook-Pro app % cat knight_moves.ts
 /**
  * Requires node, typescript, and ts-node
- * 
- * 
+ *
+ *
  * Sometimes a knight is adjacent to it's destination, but has to move further
  * away before it can hit the target.
- * 
+ *
  * - Goals
  * - Simple Brute force
  * - Aim for Correctness with some performance-related implementation debt
@@ -13,7 +13,7 @@
  * - Most everything is immutable\
  * - OO
  * - Program to an interface
- * 
+ *
  * TODOs:
  * - Create some test sets
  * - Automated testing
@@ -22,38 +22,34 @@
  * - A few global vars need cleanup
  */
 
-
-/* 
+/*
  * Every knight movement looks like an 'L'.   There's a long side and a short side
- */ 
+ */
 const LONG_SIDE = 2
 const SHORT_SIDE = 1
 
 /*
- * This is how far a knight travels when it moves 
+ * This is how far a knight travels when it moves
  */
 const KNIGHT_JUMP_DISTANCE = Math.sqrt(5)
 
 /*
 
-888                                 d8b                   
-888                                 Y8P                   
-888                                                       
-888       .d88b.   .d88b.   .d88b.  888 88888b.   .d88b.  
-888      d88""88b d88P"88b d88P"88b 888 888 "88b d88P"88b 
-888      888  888 888  888 888  888 888 888  888 888  888 
-888      Y88..88P Y88b 888 Y88b 888 888 888  888 Y88b 888 
-88888888  "Y88P"   "Y88888  "Y88888 888 888  888  "Y88888 
-                       888      888                   888 
-                  Y8b d88P Y8b d88P              Y8b d88P 
-                   "Y88P"   "Y88P"                "Y88P"  
+888                                 d8b
+888                                 Y8P
+888
+888       .d88b.   .d88b.   .d88b.  888 88888b.   .d88b.
+888      d88""88b d88P"88b d88P"88b 888 888 "88b d88P"88b
+888      888  888 888  888 888  888 888 888  888 888  888
+888      Y88..88P Y88b 888 Y88b 888 888 888  888 Y88b 888
+88888888  "Y88P"   "Y88888  "Y88888 888 888  888  "Y88888
+                       888      888                   888
+                  Y8b d88P Y8b d88P              Y8b d88P
+                   "Y88P"   "Y88P"                "Y88P"
 
-*/                                                                                               
-                                                                                               
+*/
 
-
-
-function trace(msg: any, ...args: any[]): void {
+function trace (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
   // } else {
@@ -61,7 +57,7 @@ function trace(msg: any, ...args: any[]): void {
   // }
 }
 
-function debug(msg: any, ...args: any[]): void {
+function debug (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
   // } else {
@@ -69,7 +65,7 @@ function debug(msg: any, ...args: any[]): void {
   // }
 }
 
-function info(msg: any, ...args: any[]): void {
+function info (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.info(msg, args)
   // } else {
@@ -77,15 +73,13 @@ function info(msg: any, ...args: any[]): void {
   // }
 }
 
-function warn(msg: any, ...args: any[]): void {
+function warn (msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.warn(msg, args)
   // } else {
   //   console.warn(msg)
   // }
 }
-
-
 
 /*
  * These are all the possible directions a Knight can move
@@ -94,17 +88,17 @@ enum KnightMoveDirection {
   northNorthEast = 'northNorthEast',
   eastNorthEast = 'eastNorthEast',
   eastSouthEast = 'eastSouthEast',
-  southSouthEast = 'southSouthEast',  
-  southSouthWest = 'southSouthWest', 
+  southSouthEast = 'southSouthEast',
+  southSouthWest = 'southSouthWest',
   westSouthWest = 'westSouthWest',
   westNorthWest = 'westNorthWest',
-  northNorthWest = 'northNorthWest',     
+  northNorthWest = 'northNorthWest',
 }
 
 /*
  * An iteratable list of all possible directions
  */
-const iterateAllDirections: Array<KnightMoveDirection> = Object.freeze([
+const iterateAllDirections: KnightMoveDirection[] = Object.freeze([
   KnightMoveDirection.northNorthEast,
   KnightMoveDirection.eastNorthEast,
   KnightMoveDirection.eastSouthEast,
@@ -114,9 +108,7 @@ const iterateAllDirections: Array<KnightMoveDirection> = Object.freeze([
   KnightMoveDirection.westNorthWest,
   KnightMoveDirection.northNorthWest
   // TODO: Prob cleaner way to do this
-]) as Array<KnightMoveDirection>
-
-
+]) as KnightMoveDirection[]
 
 /**
  * This represents a single square on a chess board
@@ -124,9 +116,9 @@ const iterateAllDirections: Array<KnightMoveDirection> = Object.freeze([
  */
 class ChessBoardSquare {
   private readonly m_x: number
-  private readonly m_y: number 
+  private readonly m_y: number
 
-  constructor(x: number, y: number) {
+  constructor (x: number, y: number) {
     this.m_x = x
     this.m_y = y
   }
@@ -134,135 +126,132 @@ class ChessBoardSquare {
   /**
    * Return the square's X-position
    */
-  public getX(): number {
+  public getX (): number {
     return this.m_x
   }
 
   /**
    * Return the square's Y-position
    */
-  public getY(): number {
+  public getY (): number {
     return this.m_y
-  }  
-  
+  }
 
   /**
-   * Calculate the distance to another position 
+   * Calculate the distance to another position
    */
-  public distanceBetween(anotherSquare: ChessBoardSquare): number {
+  public distanceBetween (anotherSquare: ChessBoardSquare): number {
     const xDiff = anotherSquare.getX() - this.m_x
     const yDiff = anotherSquare.getY() - this.m_y
-    const c: number = Math.sqrt(Math.pow(xDiff,2) + Math.pow(yDiff,2))
+    const c: number = Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2))
     debug(`distanceBetween(): Returning ${c},   based on xDiff = ${xDiff}, yDiff = ${yDiff}, c = ${c}`)
     return c
   }
 
-  public isSameAs(anotherSquare: ChessBoardSquare): boolean {
+  public isSameAs (anotherSquare: ChessBoardSquare): boolean {
     const retval = this.distanceBetween(anotherSquare) === 0
     debug(`isSameAs(): Returning ${retval}`)
-    return retval;
+    return retval
   }
 }
 
 class ChessBoard {
   private readonly m_numCols: number
-  private readonly m_numRows: number 
+  private readonly m_numRows: number
 
-  constructor(numCols: number, numRows: number) {
+  constructor (numCols: number, numRows: number) {
     this.m_numCols = numCols
     this.m_numRows = numRows
     debug(`constructor(): Creating chess board ${numCols}x${numRows}...`)
   }
 
   // corresponds to X
-  public getNumCols(): number {
+  public getNumCols (): number {
     return this.m_numCols
   }
 
   // corresponds to Y
-  public getNumRows(): number {
+  public getNumRows (): number {
     return this.m_numRows
-  }   
+  }
 }
-
 
 class KnightInTransit {
   private readonly m_currentSquare: ChessBoardSquare
-  private readonly m_destinationSquare: ChessBoardSquare  
-  
+  private readonly m_destinationSquare: ChessBoardSquare
+
   // Reference back to the chess board this knight is moving within
   private readonly m_chessBoardRef: ChessBoard
 
   private constructor (chessBoard: ChessBoard, currentSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare) {
-    this.m_currentSquare = currentSquare;
-    this.m_destinationSquare = destinationSquare;
+    this.m_currentSquare = currentSquare
+    this.m_destinationSquare = destinationSquare
     this.m_chessBoardRef = chessBoard
   }
 
-  public static createWithStartingSquareAndDestinationInMind(board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
+  public static createWithStartingSquareAndDestinationInMind (board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
     return new KnightInTransit(board, startingSquare, destinationSquare)
   }
 
-  public distanceFromDestination(): number {
+  public distanceFromDestination (): number {
     return this.m_destinationSquare.distanceBetween(this.m_currentSquare)
   }
 
-  public deltaXFromDestination(): number {
+  public deltaXFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getX() - this.m_currentSquare.getX())
-  }  
+  }
 
-  public deltaYFromDestination(): number {
+  public deltaYFromDestination (): number {
     return Math.abs(this.m_destinationSquare.getY() - this.m_currentSquare.getY())
-  }    
+  }
 
   // public amIWithinOneJumpAsTheCrowFlies(): boolean {
   //   return this.m_destinationSquare.distanceBetween(this.m_currentSquare) < KNIGHT_JUMP_DISTANCE
-  // }  
+  // }
 
   // public amIAdjacentFromDestination(): boolean {
   //   return this.m_destinationSquare.distanceBetween(this.m_currentSquare) < Math.sqrt(2)
   // }
 
-  public isCurrentSquareEvenOnTheBoard(): boolean {
-    if ( this.m_currentSquare.getX() > this.m_chessBoardRef.getNumCols() ) {
+  public isCurrentSquareEvenOnTheBoard (): boolean {
+    if (this.m_currentSquare.getX() > this.m_chessBoardRef.getNumCols()) {
       debug(`isCurrentSquareEvenOnTheBoard(): Returning FALSE  this.m_currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
-      return false;
+      return false
     }
-    if ( this.m_currentSquare.getY() > this.m_chessBoardRef.getNumRows() ) {
+    if (this.m_currentSquare.getY() > this.m_chessBoardRef.getNumRows()) {
       debug(`isCurrentSquareEvenOnTheBoard(): Returning FALSE  this.m_currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
-      return false;
+      return false
     }
 
-    if ( this.m_currentSquare.getX() < 1) {
-      debug(`isCurrentSquareEvenOnTheBoard(): X-pos cannot be less than 1`)
-      return false;      
+    if (this.m_currentSquare.getX() < 1) {
+      debug('isCurrentSquareEvenOnTheBoard(): X-pos cannot be less than 1')
+      return false
     }
 
-    if ( this.m_currentSquare.getY() < 1) {
-      debug(`isCurrentSquareEvenOnTheBoard(): Y-pos cannot be less than 1`)
-      return false;      
+    if (this.m_currentSquare.getY() < 1) {
+      debug('isCurrentSquareEvenOnTheBoard(): Y-pos cannot be less than 1')
+      return false
     }
 
     debug(`isCurrentSquareEvenOnTheBoard(): Returning TRUE.  this.m_currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
     return true
   }
 
-
   /**
    * Determine if the Knight has reached it's destination
    */
-  public amIAtMyDestination(): boolean {
+  public amIAtMyDestination (): boolean {
     const retval = this.m_currentSquare.isSameAs(this.m_destinationSquare)
     debug(`amIAtMyDestination(): Returning ${retval}`)
-    return retval;
-  } 
+    return retval
+  }
 
   /**
    * Instantiate and return a cloned KnightInTransit, having been moved in the specified direction
    */
 
-  public cloneAndMoveInDirection(direction: KnightMoveDirection): KnightInTransit {
-    const newSquare: ChessBoardSquare = ( () => {
+  public cloneAndMoveInDirection (direction: KnightMoveDirection): KnightInTransit {
+    const newSquare: ChessBoardSquare = (() => {
       debug(`cloneAndMoveInDirection(): Jumping '${direction}' from currentSquare = ${JSON.stringify(this.m_currentSquare)}`)
       switch (direction) {
         case KnightMoveDirection.northNorthEast: {
@@ -286,293 +275,277 @@ class KnightInTransit {
     })()
     debug(`cloneAndMoveInDirection(): newSquare = ${JSON.stringify(newSquare)}`)
     return new KnightInTransit(this.m_chessBoardRef, newSquare, this.m_destinationSquare)
-  }  
+  }
 
-  public getCurrentSquare(): ChessBoardSquare {
-    return this.m_currentSquare;
+  public getCurrentSquare (): ChessBoardSquare {
+    return this.m_currentSquare
   }
 }
 
 class KnightInTransitMovementHistory {
-  private readonly m_history: Array<KnightInTransit>
-  
-  constructor( existingHistory: Array<KnightInTransit> | undefined ) {
-    if ( existingHistory != null ) {
-      this.m_history = existingHistory.slice();
+  private readonly m_history: KnightInTransit[]
+
+  constructor (existingHistory: KnightInTransit[] | undefined) {
+    if (existingHistory != null) {
+      this.m_history = existingHistory.slice()
     } else {
       this.m_history = []
     }
   }
 
-  public getSize(): number {
-    return this.m_history.length;
+  public getSize (): number {
+    return this.m_history.length
   }
 
-  public getHistory(): Array<KnightInTransit> {
-    return this.m_history;
+  public getHistory (): KnightInTransit[] {
+    return this.m_history
   }
 
-  public haveIBeenHereBefore( knightInTransit: KnightInTransit ): boolean {
-    for (let ii = 0; ii < this.m_history.length; ii++ ) {
+  public haveIBeenHereBefore (knightInTransit: KnightInTransit): boolean {
+    for (let ii = 0; ii < this.m_history.length; ii++) {
       const knightPostionUnderTest: ChessBoardSquare = this.m_history[ii].getCurrentSquare()
       if (knightPostionUnderTest.isSameAs(knightInTransit.getCurrentSquare())) {
         return true
       }
-    }  
+    }
 
-    return false;
+    return false
   }
 
-  public isThisSquareSignificantlyWorseThanThePrevious( knightInTransit: KnightInTransit ): boolean {
+  public isThisSquareSignificantlyWorseThanThePrevious (knightInTransit: KnightInTransit): boolean {
     const deltaFromPreviousLocation = knightInTransit.distanceFromDestination() - this.m_history[0].distanceFromDestination()
     debug(`isThisSquareSignificantlyWorseThanThePrevious(): deltaFromPreviousLocation = ${deltaFromPreviousLocation}`)
-    
+
     /** If we are pretty far away, and we are getting further away still... */
     if ((knightInTransit.distanceFromDestination() > KNIGHT_JUMP_DISTANCE) && deltaFromPreviousLocation > 0) {
-      debug(`isThisSquareSignificantlyWorseThanThePrevious(): Returning TRUE`)
+      debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning TRUE')
       return true
     }
 
-    debug(`isThisSquareSignificantlyWorseThanThePrevious(): Returning FALSE`)
+    debug('isThisSquareSignificantlyWorseThanThePrevious(): Returning FALSE')
     return false
-  }  
+  }
 
-
-  public isDistantAndNotGettingCloserInBothDirectionsSimultaneously( knightInTransit: KnightInTransit ): boolean {
+  public isDistantAndNotGettingCloserInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
     const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
     const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
 
-
     debug(`isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): deltaFromLastLocationX = ${deltaFromLastLocationX},  deltaFromLastLocationY = ${deltaFromLastLocationY}`)
-    
+
     /** If we are pretty far away, and we are getting further away still... */
     if ((knightInTransit.distanceFromDestination() > KNIGHT_JUMP_DISTANCE) && (deltaFromLastLocationX > 0 || deltaFromLastLocationY > 0)) {
-      debug(`isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): Returning TRUE`)
+      debug('isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): Returning TRUE')
       return true
     }
 
-    debug(`isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): Returning FALSE`)
+    debug('isDistantAndNotGettingCloserInBothDirectionsSimultaneously(): Returning FALSE')
     return false
   }
 
-  public isThisSquareWorseInBothDirectionsSimultaneously( knightInTransit: KnightInTransit ): boolean {
+  public isThisSquareWorseInBothDirectionsSimultaneously (knightInTransit: KnightInTransit): boolean {
     const deltaFromLastLocationX = knightInTransit.deltaXFromDestination() - this.m_history[0].deltaXFromDestination()
     const deltaFromLastLocationY = knightInTransit.deltaYFromDestination() - this.m_history[0].deltaYFromDestination()
 
     debug(`isThisSquareWorseInBothDirectionsSimultaneously(): deltaFromLastLocationX = ${deltaFromLastLocationX},  deltaFromLastLocationY = ${deltaFromLastLocationY}`)
-    
+
     /** If we are pretty far away, and we are getting further away still... */
     if (deltaFromLastLocationX > 0 && deltaFromLastLocationY > 0) {
-      debug(`isThisSquareWorseInBothDirectionsSimultaneously(): Returning TRUE`)
+      debug('isThisSquareWorseInBothDirectionsSimultaneously(): Returning TRUE')
       return true
     }
 
-    debug(`isThisSquareWorseInBothDirectionsSimultaneously(): Returning FALSE`)
+    debug('isThisSquareWorseInBothDirectionsSimultaneously(): Returning FALSE')
     return false
-  }   
+  }
 
-  public cloneAndAffixSquare( knightInTransit: KnightInTransit ): KnightInTransitMovementHistory {
-    const clone = new KnightInTransitMovementHistory(this.m_history);
+  public cloneAndAffixSquare (knightInTransit: KnightInTransit): KnightInTransitMovementHistory {
+    const clone = new KnightInTransitMovementHistory(this.m_history)
     clone.m_history.unshift(knightInTransit)
-    return clone  
+    return clone
   }
 
-  public getNumMovesAlready(): number {
+  public getNumMovesAlready (): number {
     // The starting position is in the array.  So there is one less
-    return this.m_history.length - 1;
+    return this.m_history.length - 1
   }
 
-  public getNumDifferentSquares(): number {
+  public getNumDifferentSquares (): number {
     // The starting position is in the array.  So there is one less move than there are positions
-    return this.m_history.length;
-  }  
-
-  public toString(): string {
-    return this.getHistory().slice().reverse().map( (item) => `(${item.getCurrentSquare().getX()}, ${item.getCurrentSquare().getY()})`).join(" -> ")
+    return this.m_history.length
   }
 
-  public getMostRecentKnightInTransit(): KnightInTransit {
+  public toString (): string {
+    return this.getHistory().slice().reverse().map((item) => `(${item.getCurrentSquare().getX()}, ${item.getCurrentSquare().getY()})`).join(' -> ')
+  }
+
+  public getMostRecentKnightInTransit (): KnightInTransit {
     return this.m_history[0]
   }
 
-  public clone(): KnightInTransitMovementHistory {
+  public clone (): KnightInTransitMovementHistory {
     return new KnightInTransitMovementHistory(this.m_history.slice())
   }
 }
-
-
 
 /**
  * Returns undefined if there are no next moves
  */
 
-
-function determineBestHistoryThatWorks(knightInTransitMovementHistory: KnightInTransitMovementHistory, numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
-  if ( numRecursions > 20 ) {
+function determineBestHistoryThatWorks (knightInTransitMovementHistory: KnightInTransitMovementHistory, numRecursions: number, maxNumRecursions: number | undefined): KnightInTransitMovementHistory | undefined {
+  if (numRecursions > 20) {
     warn(`determineBestHistoryThatWorks(): Entering with knightInTransitMovementHistory.getSize() = ${knightInTransitMovementHistory.getSize()},  knightInTransitMovementHistory = ${knightInTransitMovementHistory.toString()},  numRecursions = ${numRecursions}`)
   }
   debug(`determineBestHistoryThatWorks(): Entering with knightInTransitMovementHistory.getSize() = ${knightInTransitMovementHistory.getSize()},  numRecursions = ${numRecursions}`)
 
   if (maxNumRecursions != null && numRecursions > maxNumRecursions) {
-    debug(`determineBestHistoryThatWorks(): Too many recursions`)
-    return undefined;
+    debug('determineBestHistoryThatWorks(): Too many recursions')
+    return undefined
   }
 
   const mostRecentKnightMovement: KnightInTransit = knightInTransitMovementHistory.getMostRecentKnightInTransit()
-  if ( mostRecentKnightMovement.amIAtMyDestination()) {
-    debug(`determineBestHistoryThatWorks(): I am there yet`)
+  if (mostRecentKnightMovement.amIAtMyDestination()) {
+    debug('determineBestHistoryThatWorks(): I am there yet')
     return knightInTransitMovementHistory
   }
 
-  let divergingHistoriesThatWork: Array<KnightInTransitMovementHistory | undefined> = []
+  const divergingHistoriesThatWork: Array<KnightInTransitMovementHistory | undefined> = []
 
   /**
    * Breadth first population of divergingHistoriesThatWork
    */
-  for( let ii: number = 0; ii < iterateAllDirections.length; ii++ )
-  {
+  for (let ii: number = 0; ii < iterateAllDirections.length; ii++) {
     /*
      * Should we even consider going in this direction?
      */
 
     debug(`determineBestHistoryThatWorks(): Should we even consider direction = ${ii} of ${iterateAllDirections.length}: ${iterateAllDirections[ii]}`)
 
-    const considerThisAsNextDirection: KnightMoveDirection = iterateAllDirections[ii];
+    const considerThisAsNextDirection: KnightMoveDirection = iterateAllDirections[ii]
     const considerThisKnightMove: KnightInTransit = mostRecentKnightMovement.cloneAndMoveInDirection(considerThisAsNextDirection)
-    
+
     /*
-        8888888888 d8b 888 888                     d8b                   
-        888        Y8P 888 888                     Y8P                   
-        888            888 888                                           
-        8888888    888 888 888888  .d88b.  888d888 888 88888b.   .d88b.  
-        888        888 888 888    d8P  Y8b 888P"   888 888 "88b d88P"88b 
-        888        888 888 888    88888888 888     888 888  888 888  888 
-        888        888 888 Y88b.  Y8b.     888     888 888  888 Y88b 888 
-        888        888 888  "Y888  "Y8888  888     888 888  888  "Y88888 
-                                                                    888 
-                                                                Y8b d88P 
-                                                                "Y88P"  
+        8888888888 d8b 888 888                     d8b
+        888        Y8P 888 888                     Y8P
+        888            888 888
+        8888888    888 888 888888  .d88b.  888d888 888 88888b.   .d88b.
+        888        888 888 888    d8P  Y8b 888P"   888 888 "88b d88P"88b
+        888        888 888 888    88888888 888     888 888  888 888  888
+        888        888 888 Y88b.  Y8b.     888     888 888  888 Y88b 888
+        888        888 888  "Y888  "Y8888  888     888 888  888  "Y88888
+                                                                    888
+                                                                Y8b d88P
+                                                                "Y88P"
     */
 
-
-    
     if (knightInTransitMovementHistory.haveIBeenHereBefore(considerThisKnightMove)) {
-      info(`determineBestHistoryThatWorks(): I have been here before.  Going in circles`)
+      info('determineBestHistoryThatWorks(): I have been here before.  Going in circles')
       continue
     }
-    if (considerThisKnightMove.isCurrentSquareEvenOnTheBoard() == false) {
-      info(`determineBestHistoryThatWorks(): I am not even on the board anymore`)
+    if (!considerThisKnightMove.isCurrentSquareEvenOnTheBoard()) {
+      info('determineBestHistoryThatWorks(): I am not even on the board anymore')
       continue
     }
     if (knightInTransitMovementHistory.isThisSquareSignificantlyWorseThanThePrevious(considerThisKnightMove)) {
-      info(`determineBestHistoryThatWorks(): Significantly worse positioning`)
+      info('determineBestHistoryThatWorks(): Significantly worse positioning')
       continue
     }
     if (knightInTransitMovementHistory.isThisSquareWorseInBothDirectionsSimultaneously(considerThisKnightMove)) {
-      info(`determineBestHistoryThatWorks(): Worse in both directions simultaneously`)
+      info('determineBestHistoryThatWorks(): Worse in both directions simultaneously')
       continue
     }
     if (knightInTransitMovementHistory.isDistantAndNotGettingCloserInBothDirectionsSimultaneously(considerThisKnightMove)) {
-      info(`determineBestHistoryThatWorks(): Distant and not getting closer in both directions`)
+      info('determineBestHistoryThatWorks(): Distant and not getting closer in both directions')
       continue
     }
 
     // if (considerThisKnightMove.amIAdjacentFromDestination()) {
     //   info(`determineBestHistoryThatWorks(): I am ADJACENT to my destination`)
-    // }    
+    // }
 
     // if (considerThisKnightMove.amIWithinOneJumpAsTheCrowFlies()) {
     //   info(`determineBestHistoryThatWorks(): I am within one jump as the crow flies`)
-    // }      
+    // }
 
-    info(`determineBestHistoryThatWorks(): Still potentially viable after filtering`)
+    info('determineBestHistoryThatWorks(): Still potentially viable after filtering')
 
     // The quick filters haven't short-circuited this approach yet,
     // so trigger recursion
 
     const anotherPotentialHistory: KnightInTransitMovementHistory = knightInTransitMovementHistory.cloneAndAffixSquare(considerThisKnightMove)
     const bestHistoryThatWorks: KnightInTransitMovementHistory | undefined = determineBestHistoryThatWorks(anotherPotentialHistory, numRecursions + 1, undefined)
-    if ( bestHistoryThatWorks != null ) {
-      debug(`determineBestHistoryThatWorks(): Found a diverging history that works`)
+    if (bestHistoryThatWorks != null) {
+      debug('determineBestHistoryThatWorks(): Found a diverging history that works')
       divergingHistoriesThatWork.unshift(bestHistoryThatWorks)
     }
   }
 
   debug(`determineBestHistoryThatWorks(): divergingHistoriesThatWork.length = ${divergingHistoriesThatWork.length}`)
 
-
-  let bestHistorySoFar: KnightInTransitMovementHistory | undefined = undefined;
+  let bestHistorySoFar: KnightInTransitMovementHistory | undefined
 
   /**
    * Iterate through divergingHistoriesThatWork and see if there are any better ones
-   */  
-  for ( let ii: number = 0; ii < divergingHistoriesThatWork.length; ii++  ) {
-    const currentHistoryUnderTest = (divergingHistoriesThatWork as Array<KnightInTransitMovementHistory>)[ii]
-    if ( bestHistorySoFar == null ) {
-      bestHistorySoFar = currentHistoryUnderTest;
+   */
+  for (let ii: number = 0; ii < divergingHistoriesThatWork.length; ii++) {
+    const currentHistoryUnderTest = (divergingHistoriesThatWork)[ii]
+    if (bestHistorySoFar == null) {
+      bestHistorySoFar = currentHistoryUnderTest
     } else {
-      if ( currentHistoryUnderTest.getNumMovesAlready() < bestHistorySoFar.getNumMovesAlready() ) {
-        bestHistorySoFar = currentHistoryUnderTest;
+      if (currentHistoryUnderTest.getNumMovesAlready() < bestHistorySoFar.getNumMovesAlready()) {
+        bestHistorySoFar = currentHistoryUnderTest
         debug(`determineBestHistoryThatWorks(): Found new bestHistorySoFar = ${JSON.stringify(bestHistorySoFar)}`)
       }
     }
   }
 
   debug(`determineBestHistoryThatWorks(): Returning ${JSON.stringify(bestHistorySoFar)}`)
-  return bestHistorySoFar;
+  return bestHistorySoFar
 }
 
-
-const myArgs = process.argv.slice(2);
+const myArgs = process.argv.slice(2)
 debug(`myArgs = ${JSON.stringify(myArgs)}`)
 
-const keyValuePairs: Map<string, string> = new Map();
+const keyValuePairs: Map<string, string> = new Map()
 
-for ( let ii = 0; ii < myArgs.length; ii++ ) {
+for (let ii = 0; ii < myArgs.length; ii++) {
   const key = myArgs[ii]
-  ii++;
+  ii++
   const value = myArgs[ii]
   debug(`Handling key/value = '${key}'/'${value}'`)
   keyValuePairs.set(key, value)
 }
 
-
-let chessBoard: ChessBoard;
-let knightStartingSquare: ChessBoardSquare;
-let knightDestinationSquare: ChessBoardSquare;
-
+let chessBoard: ChessBoard
+let knightStartingSquare: ChessBoardSquare
+let knightDestinationSquare: ChessBoardSquare
 
 /* Handle Argv */
 for (const [key, value] of keyValuePairs) {
   debug(`Handling key/value = '${key}'/'${value}'`)
 
-  if ( key === "--board_size") {
+  if (key === '--board_size') {
     const [x, y] = (value as string).split(',')
     debug(`Handling board_size = '${value}'`)
     chessBoard = new ChessBoard(Number(x), Number(y))
-  }
-  else if ( key === "--source") {
+  } else if (key === '--source') {
     const [x, y] = (value as string).split(',')
     knightStartingSquare = new ChessBoardSquare(Number(x), Number(y))
-  } 
-  else if ( key === "--dest") {
+  } else if (key === '--dest') {
     const [x, y] = (value as string).split(',')
     knightDestinationSquare = new ChessBoardSquare(Number(x), Number(y))
-  } 
+  }
 }
 
-
-
-function findMinimalKnightMoves(){
+function findMinimalKnightMoves () {
   const knightInTransit: KnightInTransit = KnightInTransit.createWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
   let knightInTransitMovementHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
   // const knightInTransitMovementHistoryClone = knightInTransitMovementHistory.cloneAndAffixSquare(KnightInTransit)
   knightInTransitMovementHistory = determineBestHistoryThatWorks(knightInTransitMovementHistory, 0, undefined)
-  if ( knightInTransitMovementHistory != null && knightInTransitMovementHistory.getSize() > 0 ) {
+  if (knightInTransitMovementHistory != null && knightInTransitMovementHistory.getSize() > 0) {
     console.log(`>> ${knightInTransitMovementHistory.toString()}`)
     console.log(`>> ${knightInTransitMovementHistory.getNumDifferentSquares()}`)
   } else {
-    console.log(`-1`)
+    console.log('-1')
   }
 }
 
@@ -584,5 +557,4 @@ findMinimalKnightMoves()
 // % ./knight_moves --board_size 27,27 --dest 27,27 --source 1,1
 // >> (1, 1) -> (3, 2) -> (5, 3) -> (7, 4) -> (9, 5) -> (11, 6) -> (13, 7) -> (15, 8) -> (17, 9) -> (19, 10) -> (21, 11) -> (22, 13) -> (23, 15) -> (24, 17) -> (25, 19) -> (26, 21) -> (27, 23) -> (26, 25) -> (27, 27)
 // >> 19
-// jeano@MacBook-Pro app % 
-
+// jeano@MacBook-Pro app %
