@@ -11,6 +11,7 @@
     "moduleResolution": "node"
   },
   "files": [
-    "src/knight_moves.ts"
+    "src/knight_moves.ts",
+    "src/cli.ts"
   ]
 }
