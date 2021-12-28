@@ -1,7 +1,14 @@
 {
+  "name": "knight_moves",
+  "version": "0.1.0",
+  "private": true,  
   "devDependencies": {
     "ts-node": "^10.4.0",
     "ts-standard": "^11.0.0",
     "typescript": "^4.5.4"
+  },
+  "scripts": {
+    "compile": "npx tsc",
+    "dev": "npx ts-node src/knight_moves.ts --board_size 11,11 --dest 10,10 --source 1,1"
   }
 }
