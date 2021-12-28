@@ -1,7 +1,4 @@
-// jeano@MacBook-Pro app % cat knight_moves.ts
 /**
- * Requires node, typescript, and ts-node
- *
  *
  * Sometimes a knight is adjacent to it's destination, but has to move further
  * away before it can hit the target.
@@ -15,16 +12,18 @@
  * - Program to an interface
  *
  * TODOs:
- * - Create some test sets
- * - Automated testing
+ * - Create correctness test suites/gold results
  * - Benchmarking
- * - Make this a npm package
- * - A few global vars need cleanup
+ * - lint fixing
+ * - break this into multiple files
+ * - unit testing
+ * - I'm not yet confident in the filtering correctness or performance.  More testing is needed here.
  */
 
 /*
  * Every knight movement looks like an 'L'.   There's a long side and a short side
  */
+// TODO: Naming
 const LONG_SIDE = 2
 const SHORT_SIDE = 1
 
@@ -49,8 +48,9 @@ const KNIGHT_JUMP_DISTANCE = Math.sqrt(5)
 
 */
 
-// TODO: replace with log4js
+// TODO: replace with log4js and named loggers
 function trace (msg: any, ...args: any[]): void {
+  // Uncomment these lines to include logging
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
   // } else {
@@ -139,7 +139,7 @@ export class ChessBoardSquare {
   }
 
   /**
-   * Calculate the distance to another position
+   * Calculate the distance between this square and another
    */
   public distanceBetween (anotherSquare: ChessBoardSquare): number {
     const xDiff = anotherSquare.getX() - this.m_x
@@ -149,6 +149,10 @@ export class ChessBoardSquare {
     return c
   }
 
+
+  /**
+   * Is this square in the same location as another?
+   */
   public isSameAs (anotherSquare: ChessBoardSquare): boolean {
     const retval = this.distanceBetween(anotherSquare) === 0
     debug(`isSameAs(): Returning ${retval}`)
@@ -194,7 +198,7 @@ export class KnightInTransit {
     this.m_chessBoardRef = chessBoard
   }
 
-  // TODO: More concise
+  // TODO: More concise naming
   public static createKnightWithStartingSquareAndDestinationInMind (board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
     return new KnightInTransit(board, startingSquare, destinationSquare)
   }
@@ -211,6 +215,7 @@ export class KnightInTransit {
     return Math.abs(this.m_destinationSquare.getY() - this.m_currentSquare.getY())
   }
 
+  // Retain for debugging
   // public amIWithinOneJumpAsTheCrowFlies(): boolean {
   //   return this.m_destinationSquare.distanceBetween(this.m_currentSquare) < KNIGHT_JUMP_DISTANCE
   // }
