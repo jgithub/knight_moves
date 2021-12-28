@@ -555,20 +555,24 @@ d88P     888   888     "Y88888     Y88P
   }
 }
 
-function findMinimalKnightMoves () {
-  const knightInTransit: KnightInTransit = KnightInTransit.createWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
-  let knightInTransitMovementHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
-  // const knightInTransitMovementHistoryClone = knightInTransitMovementHistory.cloneAndAffixSquare(KnightInTransit)
-  knightInTransitMovementHistory = determineBestHistoryThatWorks(knightInTransitMovementHistory, 0, undefined)
-  if (knightInTransitMovementHistory != null && knightInTransitMovementHistory.getSize() > 0) {
-    console.log(`>> ${knightInTransitMovementHistory.toString()}`)
-    console.log(`>> ${knightInTransitMovementHistory.getNumDifferentSquares()}`)
-  } else {
-    console.log('-1')
+class KnightMoveRunner {
+  public run(chessBoard: ChessBoard, knightStartingSquare: ChessBoardSquare, knightDestinationSquare: ChessBoardSquare): KnightInTransitMovementHistory | undefined {
+    const knightInTransit: KnightInTransit = KnightInTransit.createWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
+    let knightInTransitMovementHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
+    // const knightInTransitMovementHistoryClone = knightInTransitMovementHistory.cloneAndAffixSquare(KnightInTransit)
+    knightInTransitMovementHistory = determineBestHistoryThatWorks(knightInTransitMovementHistory, 0, undefined)
+    return knightInTransitMovementHistory
   }
 }
 
-findMinimalKnightMoves()
+const knightMoveRunner: KnightMoveRunner = new KnightMoveRunner()
+const knightInTransitMovementHistory: KnightInTransitMovementHistory | undefined = knightMoveRunner.run(chessBoard, knightStartingSquare, knightDestinationSquare)
+if (knightInTransitMovementHistory != null && knightInTransitMovementHistory.getSize() > 0) {
+  console.log(`>> ${knightInTransitMovementHistory.toString()}`)
+  console.log(`>> ${knightInTransitMovementHistory.getNumDifferentSquares()}`)
+} else {
+  console.log('-1')
+}
 
 // % npx ts-node knight_moves.ts --board_size 11,11 --dest 11,11 --source 1,1
 // % npx ts-node knight_moves.ts --board_size 11,11 --dest 10,10 --source 1,1
