@@ -6,7 +6,7 @@
       "es6",
       "dom"    
     ],
-    "types": ["node"],
+    "types": ["node", "jest"],
     "noEmit": false,
     "moduleResolution": "node"
   },

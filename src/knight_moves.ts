@@ -49,6 +49,7 @@ const KNIGHT_JUMP_DISTANCE = Math.sqrt(5)
 
 */
 
+// TODO: replace with log4js
 function trace(msg: any, ...args: any[]): void {
   // if ( args.length > 0 ) {
   //   console.log(msg, args)
@@ -155,6 +156,10 @@ export class ChessBoardSquare {
   }
 }
 
+/**
+ * Represents a ChessBoard object... specifically the dimensions
+ */
+
 export class ChessBoard {
   private readonly m_numCols: number
   private readonly m_numRows: number
@@ -189,7 +194,8 @@ export class KnightInTransit {
     this.m_chessBoardRef = chessBoard
   }
 
-  public static createWithStartingSquareAndDestinationInMind(board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
+  // TODO: More concise
+  public static createKnightWithStartingSquareAndDestinationInMind(board: ChessBoard, startingSquare: ChessBoardSquare, destinationSquare: ChessBoardSquare): KnightInTransit {
     return new KnightInTransit(board, startingSquare, destinationSquare)
   }
 
@@ -410,7 +416,7 @@ export class KnightInTransitMovementHistory {
     const divergingHistoriesThatWork: Array<KnightInTransitMovementHistory | undefined> = []
 
     /**
-     * Breadth first population of divergingHistoriesThatWork
+     * Consider all the directions a knight might move.  There are 8
      */
     for (let ii: number = 0; ii < iterateAllDirections.length; ii++) {
       /*
@@ -435,6 +441,19 @@ export class KnightInTransitMovementHistory {
                                                                   Y8b d88P
                                                                   "Y88P"
       */
+
+      /**
+       * Filter out/Disregard as many bogus moves as possible, as fast as possible
+       * 
+       * TODO:  There is some risk and debt here.  These filters are based on my gut.   There
+       * are possibly a number of bugs and/or performance weaknesses.  
+       * 
+       * TODO:  More testing with test sets that I know are accurate
+       * TODO:  Profiling/performance improvements
+       * TODO:  For instance Consider a board where we are moving from square (1,1) to square (1000,1000).  
+       *        The fastest approach might to just prefix the history with a bunch of alternating
+       *        North-north-east and ENE movements until we "get close" 
+       */
 
       if (this.haveIBeenHereBefore(considerThisKnightMove)) {
         info('determineBestHistoryThatWorks(): I have been here before.  Going in circles')
@@ -470,11 +489,13 @@ export class KnightInTransitMovementHistory {
       // The quick filters haven't short-circuited this approach yet,
       // so trigger recursion
 
-      const anotherPotentialHistory: KnightInTransitMovementHistory = this.cloneAndAffixSquare(considerThisKnightMove)
-      const bestHistoryThatWorks: KnightInTransitMovementHistory | undefined = anotherPotentialHistory.determineBestHistoryThatWorks(numRecursions + 1, undefined)
-      if (bestHistoryThatWorks != null) {
+      const anotherPotentialHistoryToConsider: KnightInTransitMovementHistory = this.cloneAndAffixSquare(considerThisKnightMove)
+      
+      // TODO: More concise name
+      const bestKnightInTransitMovementHistoryFromThisSubtree: KnightInTransitMovementHistory | undefined = anotherPotentialHistoryToConsider.determineBestHistoryThatWorks(numRecursions + 1, undefined)
+      if (bestKnightInTransitMovementHistoryFromThisSubtree != null) {
         debug('determineBestHistoryThatWorks(): Found a diverging history that works')
-        divergingHistoriesThatWork.unshift(bestHistoryThatWorks)
+        divergingHistoriesThatWork.unshift(bestKnightInTransitMovementHistoryFromThisSubtree)
       }
     }
 
@@ -506,7 +527,7 @@ export class KnightInTransitMovementHistory {
 
 export class KnightMoveRunner {
   public run(chessBoard: ChessBoard, knightStartingSquare: ChessBoardSquare, knightDestinationSquare: ChessBoardSquare): KnightInTransitMovementHistory | undefined {
-    const knightInTransit: KnightInTransit = KnightInTransit.createWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
+    const knightInTransit: KnightInTransit = KnightInTransit.createKnightWithStartingSquareAndDestinationInMind(chessBoard, knightStartingSquare, knightDestinationSquare)
     const initialHistory: KnightInTransitMovementHistory | undefined = new KnightInTransitMovementHistory([knightInTransit])
     const knightInTransitMovementHistory = initialHistory.determineBestHistoryThatWorks(0, undefined)
     return knightInTransitMovementHistory
