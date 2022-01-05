@@ -6,12 +6,29 @@
       "es6",
       "dom"    
     ],
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "reflect-metadata"],
     "noEmit": false,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "files": [
-    "src/knight_moves.ts",
-    "src/cli.ts"
+    "src/diTypes.ts",
+    "src/NextDirectionGuesserFactory.ts",
+    "src/constant.ts",
+    "src/NextDirectionGuesserSlopeOfVectorImpl.ts",
+    "src/cli.ts",
+    "src/KnightMoveDirection.ts",
+    "src/ChessBoard.ts",
+    "src/NextDirectionGuesserFactorySlopeOfVectorImpl.ts",
+    "src/KnightInTransit.ts",
+    "src/ChessBoardSquare.ts",
+    "src/NextDirectionGuesserBruteForceImpl.ts",
+    "src/log/KmLogger.ts",
+    "src/NextDirectionGuesser.ts",
+    "src/inversify.config.ts",
+    "src/NextDirectionGuesserFactoryBruteForceImpl.ts",
+    "src/knightUtil.ts",
+    "src/KnightMoveOptimizer.ts"
   ]
 }
