@@ -1,4 +1,7 @@
 # knight_moves
+
+# Quickstart
+
 * If you have a recent version of node install, the easiest way to run this is probably `./knight_moves.sh --board_size 11,11 --dest 10,10 --source 1,1`.   This uses the precompiled *.js files
  
 ```
@@ -16,7 +19,7 @@ Or if you prefer to run the typescript
 ``` 
 
 
-# Tech Exercise
+# "Coding Exercise Ask"
 
 Below is the small technical exercise for our interview. You can welcome to choose any languages you want. Please provide documentation on how to compile and execute it. 
 
