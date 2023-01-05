@@ -1,6 +1,6 @@
 {
   "name": "knight_moves",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "devDependencies": {
     "@types/jest": "^27.0.3",
@@ -17,5 +17,11 @@
     "start": "npx node lib/cli.js --board_size 11,11 --dest 10,10 --source 1,1",
     "lint-fix": "npx ts-standard --fix",
     "test": "jest"
+  },
+  "dependencies": {
+    "@types/inversify": "^2.0.33",
+    "dotenv": "^10.0.0",
+    "inversify": "^6.0.1",
+    "reflect-metadata": "^0.1.13"
   }
 }

@@ -1,8 +1,19 @@
-import { KnightMoveRunner, debug, ChessBoard, ChessBoardSquare, KnightInTransitMovementHistory } from './knight_moves'
+
+/**
+ * This file provides the the "knight_moves CLI" functionality
+ */
+
+import { ChessBoardSquare } from './ChessBoardSquare'
+import { ChessBoard } from './ChessBoard'
+import { KmLogger } from './log/KmLogger'
+import { KnightMoveOptimizer } from './KnightMoveOptimizer'
+import { KnightInTransit } from './knightInTransit'
 
 let chessBoard: ChessBoard
 let knightStartingSquare: ChessBoardSquare
 let knightDestinationSquare: ChessBoardSquare
+
+const LOG: KmLogger = KmLogger.getLogger('cli.ts')
 
 /*
        d8888
@@ -19,7 +30,7 @@ d88P     888   888     "Y88888     Y88P
 */
 {
   const myArgs = process.argv.slice(2)
-  debug(`myArgs = ${JSON.stringify(myArgs)}`)
+  LOG.debug(`cli.ts: myArgs = ${JSON.stringify(myArgs)}`)
 
   const keyValuePairs: Map<string, string> = new Map()
 
@@ -27,7 +38,7 @@ d88P     888   888     "Y88888     Y88P
     const key = myArgs[ii]
     ii++
     const value = myArgs[ii]
-    debug(`Handling key/value = '${key}'/'${value}'`)
+    LOG.debug(`Handling key/value = '${key}'/'${value}'`)
     keyValuePairs.set(key, value)
   }
 
@@ -36,27 +47,33 @@ d88P     888   888     "Y88888     Y88P
   for (let ii = 0; ii < argKeys.length; ii++) {
     const key = argKeys[ii]
     const value = keyValuePairs.get(key)
-    debug(`Handling key/value = '${key}'/'${value}'`)
+    LOG.debug(`Handling key/value = '${key}'/'${value}'`)
 
     if (key === '--board_size') {
       const [x, y] = (value).split(',')
-      debug(`Handling board_size = '${value}'`)
+      LOG.debug(`Handling board_size = '${value}'`)
       chessBoard = new ChessBoard(Number(x), Number(y))
     } else if (key === '--source') {
+      if (chessBoard == null) {
+        throw new Error('Please specify the --board_size before --source and --dest')
+      }
       const [x, y] = (value).split(',')
-      knightStartingSquare = new ChessBoardSquare(Number(x), Number(y))
+      knightStartingSquare = new ChessBoardSquare(chessBoard, Number(x), Number(y))
     } else if (key === '--dest') {
+      if (chessBoard == null) {
+        throw new Error('Please specify the --board_size before --source and --dest')
+      }
       const [x, y] = (value).split(',')
-      knightDestinationSquare = new ChessBoardSquare(Number(x), Number(y))
+      knightDestinationSquare = new ChessBoardSquare(chessBoard, Number(x), Number(y))
     }
   }
 }
 
-const knightMoveRunner: KnightMoveRunner = new KnightMoveRunner()
-const knightInTransitMovementHistory: KnightInTransitMovementHistory | undefined = knightMoveRunner.run(chessBoard, knightStartingSquare, knightDestinationSquare)
-if (knightInTransitMovementHistory != null && knightInTransitMovementHistory.getSize() > 0) {
-  console.log(`>> ${knightInTransitMovementHistory.toString()}`)
-  console.log(`>> ${knightInTransitMovementHistory.getNumDifferentSquares()}`)
+const knightMoveOptimizer: KnightMoveOptimizer = new KnightMoveOptimizer()
+const knightInTransit: KnightInTransit | undefined = knightMoveOptimizer.optimize(knightStartingSquare, knightDestinationSquare)
+if (knightInTransit != null && knightInTransit.getNumSquaresInPath() > 0) {
+  console.log(`>> ${knightInTransit.toString()}`)
+  console.log(`>> ${knightInTransit.getNumSquaresInPath()}`)
 } else {
   console.log('-1')
 }
@@ -65,6 +82,6 @@ if (knightInTransitMovementHistory != null && knightInTransitMovementHistory.get
 // % npx ts-node knight_moves.ts --board_size 11,11 --dest 10,10 --source 1,1
 // % ./knight_moves --board_size 3,3 --dest 3,3 --source 1,1
 // % ./knight_moves --board_size 27,27 --dest 27,27 --source 1,1
-// >> (1, 1) -> (3, 2) -> (5, 3) -> (7, 4) -> (9, 5) -> (11, 6) -> (13, 7) -> (15, 8) -> (17, 9) -> (19, 10) -> (21, 11) -> (22, 13) -> (23, 15) -> (24, 17) -> (25, 19) -> (26, 21) -> (27, 23) -> (26, 25) -> (27, 27)
+// >> (1, 1) -> (2, 3) -> (3, 5) -> (4, 7) -> (5, 9) -> (6, 11) -> (7, 13) -> (8, 15) -> (9, 17) -> (10, 19) -> (11, 21) -> (13, 22) -> (15, 23) -> (17, 24) -> (19, 25) -> (21, 26) -> (23, 27) -> (25, 26) -> (27, 27)
 // >> 19
 // jeano@MacBook-Pro app %
